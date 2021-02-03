@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using ProjectManagerJohn.Models;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,10 @@ namespace ProjectManagerJohn
                 options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
                 );
 
+            services.AddSwaggerGen(c => {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title="John's Web API", Version="v1"});
+            });
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
                     options.TokenValidationParameters = new TokenValidationParameters
@@ -68,9 +73,16 @@ namespace ProjectManagerJohn
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
             app.UseAuthentication();
+
             app.UseAuthorization();
 
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c => {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "John's API v1");
+            });
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
